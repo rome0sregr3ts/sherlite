@@ -110,8 +110,28 @@ Windows 11 terminal support
 
 
 
+
+### Socials Tab
+View all of the creator's public social media usernames to request features or just chat:
+
+- Instagram: @rome0s_regr3ts  
+- Twitter/X: @sev3red_ties
+- TikTok: @ipackedtheconetoomuch 
+- Discord: breakmybonesbutactasmyspine 
+- Email: charlie.john426@gmail.com
+
+
 ---
 
-🩵 Built with pride by @rome0s_regr3ts — Neofetch meets Sherlock.
+### Dependencies
+This version uses:
 
----
+- requests
+- colorama
+- rich
+- pyfiglet
+
+Install via:
+
+```bash
+pip3 install -r requirements.txt
