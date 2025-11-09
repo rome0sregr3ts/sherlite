@@ -1,0 +1,70 @@
+For the install .sh script,
+you need to run 
+
+nano install.sh
+
+and paste this -
+
+
+#!/bin/bash
+
+echo "[*] Detecting OS..."
+OS=$(uname -s)
+echo "[*] OS detected: $OS"
+
+# Update system and install Python & git
+if [[ "$OS" == "Linux" ]]; then
+    echo "[*] Updating Linux packages..."
+    sudo apt update && sudo apt upgrade -y
+    sudo apt install python3 python3-pip git -y
+elif [[ "$OS" == "Darwin" ]]; then
+    echo "[*] macOS detected. Installing brew packages..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    brew install python3 git
+elif [[ "$OS" == *"Android"* ]] || [[ -f /data/data/com.termux/files/usr/bin/termux-info ]]; then
+    echo "[*] Termux detected. Installing packages..."
+    pkg update && pkg upgrade -y
+    pkg install python git -y
+else
+    echo "[!] Unknown OS. You may need to install Python3 & git manually."
+fi
+
+# Install Python dependencies
+echo "[*] Installing Python dependencies..."
+pip3 install -r requirements.txt
+
+echo "[*] Setup complete! Run the script with:"
+echo "      python3 sherlite.py"
+
+
+
+
+
+
+
+
+
+
+use CTRL - X , Y and Enter to leave the file, and maks
+
+it executable with
+
+
+
+
+
+
+
+chmod +x install.sh
+
+
+
+
+
+
+
+
+
+
+
+----------
