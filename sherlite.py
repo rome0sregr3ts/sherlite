@@ -3,20 +3,26 @@
 
 import requests
 import concurrent.futures
-from colorama import Fore, Style, init
 import sys
-import time
 import os
+import time
 from datetime import datetime
 import platform
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.align import Align
+from rich.text import Text
+from rich.progress import track
+import pyfiglet
 
 # ===== Initialization =====
-init(autoreset=True)
+console = Console()
 OS_NAME = platform.system().lower()
 MAX_THREADS = 10
 TIMEOUT = 5
-# ==========================
 
+# ===== Sites to check =====
 SITES = {
     "GitHub": "https://github.com/{}",
     "Twitter": "https://x.com/{}",
@@ -32,27 +38,26 @@ SITES = {
     "Twitch": "https://www.twitch.tv/{}",
 }
 
-def clear_screen():
-    if "windows" in OS_NAME:
-        os.system("cls")
-    else:
-        os.system("clear")
+# ===== Socials tab =====
+SOCIALS = {
+    "Instagram": "@rome0s_regr3ts",
+    "Twitter/X": "@rome0s_regr3ts",
+    "TikTok": "@rome0s_regr3ts",
+    "Discord": "rome0s#0001",
+    "Email": "rome0sregr3ts@example.com"
+}
 
-def skyline_banner():
+# ===== Utility functions =====
+def clear_screen():
+    os.system("cls" if "windows" in OS_NAME else "clear")
+
+def print_banner():
     clear_screen()
-    print(Fore.CYAN + """
-      ╭────────────────────────────────────────────╮
-      │                SHERLITE v2.2               │
-      │────────────────────────────────────────────│
-      │      Sherlock-style username finder        │
-      │     Styled after Neofetch & Skyline        │
-      │                                            │
-      │  Creator  : @rome0s_regr3ts                │
-      │  Assistant: ChatGPT (GPT-5)                │
-      │  Platform : Termux • macOS • Linux         │
-      ╰────────────────────────────────────────────╯
-                🌆  🏙️  🌃  🌉  🌌
-""" + Style.RESET_ALL)
+    banner_text = pyfiglet.figlet_format("Sherlite", font="slant")
+    console.print(Align.center(Text(banner_text, style="bold cyan")))
+    console.print(Align.center(Text("Sherlock-style username finder", style="bold green")))
+    console.print(Align.center(Text("Creator: @rome0s_regr3ts | Assistant: ChatGPT (GPT-5)", style="bold magenta")))
+    console.print("\n")
 
 def fetch_tiktok_followers(username):
     try:
@@ -73,19 +78,18 @@ def check_site(site_name, url, username, found_list):
     try:
         r = requests.get(full_url, timeout=TIMEOUT)
         if r.status_code == 200:
+            follow_txt = ""
             if site_name == "TikTok":
                 followers = fetch_tiktok_followers(username)
                 follow_txt = f" ({followers} followers)" if followers else ""
-                print(f"{Fore.GREEN}✓ {site_name:<12}{Style.RESET_ALL} → {full_url}{follow_txt}")
-            else:
-                print(f"{Fore.GREEN}✓ {site_name:<12}{Style.RESET_ALL} → {full_url}")
+            console.print(f"[green]✓ {site_name:<12}[/green] → {full_url}{follow_txt}")
             found_list.append(full_url)
         elif r.status_code == 404:
-            print(f"{Fore.RED}✗ {site_name:<12}{Style.RESET_ALL}")
+            console.print(f"[red]✗ {site_name:<12}[/red]")
         else:
-            print(f"{Fore.YELLOW}? {site_name:<12}{Style.RESET_ALL} (Status {r.status_code})")
+            console.print(f"[yellow]? {site_name:<12}[/yellow] (Status {r.status_code})")
     except requests.RequestException:
-        print(f"{Fore.MAGENTA}! {site_name:<12}{Style.RESET_ALL} [Connection error]")
+        console.print(f"[magenta]! {site_name:<12}[/magenta] [Connection error]")
 
 def save_results(username, results):
     if not results:
@@ -96,80 +100,69 @@ def save_results(username, results):
     with open(filename, "w") as f:
         for line in results:
             f.write(line + "\n")
-    print(Fore.CYAN + f"\n[+] Saved {len(results)} found profiles to: {filename}\n" + Style.RESET_ALL)
+    console.print(f"[cyan][+] Saved {len(results)} found profiles to: {filename}[/cyan]\n")
 
-    # Open file automatically based on OS
-    if "darwin" in OS_NAME:  # macOS
-        os.system(f"open '{filename}'")
-    elif "linux" in OS_NAME and "termux" not in sys.executable.lower():
-        os.system(f"xdg-open '{filename}' >/dev/null 2>&1")
-
+# ===== Core functions =====
 def search_all_sites(username):
-    skyline_banner()
-    print(Fore.YELLOW + f"Searching '{username}' across {len(SITES)} sites...\n" + Style.RESET_ALL)
+    print_banner()
+    console.print(f"[yellow]Searching '{username}' across {len(SITES)} sites...\n[/yellow]")
     found = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
         for site_name, url in SITES.items():
             executor.submit(check_site, site_name, url, username, found)
     executor.shutdown(wait=True)
     save_results(username, found)
-    input(Fore.YELLOW + "\nPress Enter to return..." + Style.RESET_ALL)
+    input("[yellow]Press Enter to return...[/yellow]")
 
 def search_specific_site():
-    skyline_banner()
-    print(Fore.CYAN + "Select a site to search:\n" + Style.RESET_ALL)
+    print_banner()
+    table = Table(title="Select a site to search", style="bold magenta")
+    table.add_column("Number", style="cyan")
+    table.add_column("Site", style="green")
     for i, site in enumerate(SITES.keys(), start=1):
-        print(f"{Fore.YELLOW}{i}. {Style.RESET_ALL}{site}")
-    print()
-    choice = input(Fore.CYAN + "Enter number: " + Style.RESET_ALL)
+        table.add_row(str(i), site)
+    console.print(table)
+    choice = input("Enter number: ").strip()
     try:
         site_name = list(SITES.keys())[int(choice) - 1]
     except:
-        print(Fore.RED + "Invalid selection." + Style.RESET_ALL)
+        console.print("[red]Invalid selection.[/red]")
         time.sleep(1)
         return
-    username = input(Fore.CYAN + f"Enter username for {site_name}: " + Style.RESET_ALL).strip()
-    skyline_banner()
-    print(Fore.YELLOW + f"Searching '{username}' on {site_name}...\n" + Style.RESET_ALL)
+    username = input(f"Enter username for {site_name}: ").strip()
+    print_banner()
+    console.print(f"[yellow]Searching '{username}' on {site_name}...\n[/yellow]")
     found = []
     check_site(site_name, SITES[site_name], username, found)
     save_results(username, found)
-    input(Fore.YELLOW + "\nPress Enter to return..." + Style.RESET_ALL)
+    input("[yellow]Press Enter to return...[/yellow]")
 
-def credits():
-    clear_screen()
-    print(Fore.MAGENTA + """
-╭────────────────────────────────────────────╮
-│                   CREDITS                  │
-│────────────────────────────────────────────│
-│  Creator  : @rome0s_regr3ts (Instagram)    │
-│  Assistant: ChatGPT (GPT-5)                │
-│  Inspired : Sherlock Project + Neofetch    │
-│  Platforms: macOS • Linux • Termux         │
-╰────────────────────────────────────────────╯
-""" + Style.RESET_ALL)
-    input(Fore.YELLOW + "Press Enter to return..." + Style.RESET_ALL)
+def show_socials():
+    print_banner()
+    console.print(Panel.fit("\n".join(f"[bold cyan]{k}[/bold cyan]: [green]{v}[/green]" for k, v in SOCIALS.items()), title="Connect with me!", subtitle="Ask for requests or talk shit 🤙", style="bright_magenta"))
+    input("\n[yellow]Press Enter to return...[/yellow]")
 
+# ===== Main menu =====
 def main_menu():
     while True:
-        skyline_banner()
-        print(Fore.YELLOW + "1." + Style.RESET_ALL + " Search all sites")
-        print(Fore.YELLOW + "2." + Style.RESET_ALL + " Search specific site")
-        print(Fore.YELLOW + "3." + Style.RESET_ALL + " View credits")
-        print(Fore.YELLOW + "4." + Style.RESET_ALL + " Exit\n")
-        choice = input(Fore.CYAN + "Select option: " + Style.RESET_ALL).strip()
+        print_banner()
+        console.print("[yellow]1.[/yellow] Search all sites")
+        console.print("[yellow]2.[/yellow] Search specific site")
+        console.print("[yellow]3.[/yellow] View socials")
+        console.print("[yellow]4.[/yellow] Exit\n")
+        choice = input("Select option: ").strip()
         if choice == "1":
-            username = input(Fore.CYAN + "Enter username: " + Style.RESET_ALL).strip()
+            username = input("Enter username: ").strip()
             search_all_sites(username)
         elif choice == "2":
             search_specific_site()
         elif choice == "3":
-            credits()
+            show_socials()
         elif choice == "4":
-            print(Fore.CYAN + "\nGoodbye!\n" + Style.RESET_ALL)
+            console.print("[cyan]\nGoodbye![/cyan]")
             sys.exit(0)
         else:
-            print(Fore.RED + "Invalid input." + Style.RESET_ALL)
+            console.print("[red]Invalid input.[/red]")
             time.sleep(1)
 
 if __name__ == "__main__":
