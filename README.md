@@ -20,7 +20,7 @@
 ```bash
 pkg update && pkg upgrade -y
 pkg install python git -y
-git clone https://github.com/<yourusername>/sherlite.git
+git clone https://github.com/rome0sregr3ts/sherlite.git
 cd sherlite
 pip install -r requirements.txt
 python sherlite.py
@@ -33,7 +33,7 @@ brew install python3 git
 # Ubuntu/Debian Linux
 sudo apt update && sudo apt install python3 python3-pip git -y
 
-git clone https://github.com/<yourusername>/sherlite.git
+git clone https://github.com/<rome0sregr3ts>/sherlite.git
 cd sherlite
 pip3 install -r requirements.txt
 python3 sherlite.py
