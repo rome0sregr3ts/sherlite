@@ -1,4 +1,4 @@
-# 🌆 Sherlite — Neofetch-Style Username Finder.
+# 🌆 Sherlite — Fast and Reliable Username finder, styled after Neofetch and inspired by Sherlock Project.
 **Sherlite** is a fast, Python-based username search tool that checks multiple platforms, including GitHub, Instagram, TikTok, Reddit, and more. It features a Neofetch-inspired terminal banner, multithreaded searches, and automatic result saving. TikTok follower counts are displayed when available. Fully portable across Termux (Android), macOS, and Linux.
 
 ---
