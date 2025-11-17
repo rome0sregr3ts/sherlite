@@ -45,10 +45,12 @@ python3 sherlite.py
 
 requests
 colorama
+rich
+pyfiglet
 
 Install manually if needed:
 
-pip3 install requests colorama
+pip3 install requests colorama rich pyfiglet
 
 
 ---
